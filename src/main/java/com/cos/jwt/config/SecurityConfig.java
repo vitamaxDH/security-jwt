@@ -1,11 +1,15 @@
 package com.cos.jwt.config;
 
+import com.cos.jwt.filter.MyFilter1;
+import com.cos.jwt.filter.MyFilter3;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 import org.springframework.web.filter.CorsFilter;
 
 @Configuration
@@ -17,6 +21,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // 필터를 FilterRegistrationBean 에 등록하더라도 무조건 Security 관련 필터가 우선 실행되기 때문에
+        // 다른 필터를 우선 등록하려면 addFilterBefore 를 이용해야함. 이를 이용해서 jwt 를 사용할 수 있음.
+        http.addFilterBefore(new MyFilter3(), SecurityContextPersistenceFilter.class);
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // cookie, session 등을 이용한 stateful x
                 .and()

@@ -1,7 +1,9 @@
 package com.cos.jwt.config;
 
 import com.cos.jwt.config.jwt.JwtAuthenticationFilter;
+import com.cos.jwt.config.jwt.JwtAuthorizationFilter;
 import com.cos.jwt.filter.MyFilter3;
+import com.cos.jwt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,12 +21,12 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final CorsFilter corsFilter;
+    private final UserRepository userRepository;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
-
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -37,7 +39,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(corsFilter) // @CrossOrigin(인증x), 시큐리티 필터에 등록 인증(o)
                 .formLogin().disable()  // jwt 설정 시 필수, 폼으로 로그인 하는것 안함
                 .httpBasic().disable()  // jwt 설정 시 필수. 왜냐? header 의 authorization 에 bearer 토큰을 넣을 것이기 때문
-                .addFilter(new JwtAuthenticationFilter(authenticationManager())) // AuthenticationManager
+                .addFilter(new JwtAuthenticationFilter(authenticationManager())) // AuthenticationManager, formLogin().disable() 대신에 사용. 기본 url = /contextPath/login
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(), userRepository)) // AuthenticationManager
                 .authorizeRequests()
                 .antMatchers("/api/v1/user/**")
                 .access("hasRole('ROLE_USER') or hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")

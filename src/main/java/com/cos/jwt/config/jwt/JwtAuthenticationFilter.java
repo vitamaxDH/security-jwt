@@ -37,9 +37,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         log.info("JwtAuthenticationFilter: 로그인 시도중");
 
-
         Authentication authentication = null;
-
         // 1. username, password 받아서
         try {
 //            BufferedReader br = request.getReader();
@@ -92,10 +90,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         // RSA방식이 아닌 Hash 암호방식
         String jwtToken = JWT.create()
                 .withSubject("cos토큰")
-                .withExpiresAt(new Date(System.currentTimeMillis() + (60000 * 10)))
+                .withExpiresAt(new Date(System.currentTimeMillis() + (JwtProperties.EXPIRATION_TIME)))
                 .withClaim("id", principalDetails.getUser().getId())
                 .withClaim("username", principalDetails.getUsername())
-                .sign(Algorithm.HMAC512("cos"));
+                .sign(Algorithm.HMAC512(JwtProperties.SECRET));
 
         response.addHeader("Authorization", "Bearer " + jwtToken);
     }
